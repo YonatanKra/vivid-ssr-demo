@@ -2,23 +2,17 @@
 import 'global-jsdom/register';
 import '@vonage/vivid/button';
 import { getFileContents } from '../../utils/file-utils.mjs';
+import { renderVividComponent } from '../../utils/render-utils.mjs';
 
-const coreStyles= await getFileContents();
+const coreStyles= await getFileContents('./node_modules/@vonage/vivid/styles/core/all.css');
 const themeStyles  = await getFileContents('./node_modules/@vonage/vivid/styles/tokens/theme-light.css');
 
 const button = document.createElement('vwc-button');
-button.setAttribute('label', 'Dehydrate Me Please');
-button.setAttribute('connotation', 'alert');
-button.setAttribute('appearance', 'filled');
-document.body.append(button);
-
-const buttonOuterHTML = button.outerHTML;
-const shadowRootAppendageIndex = buttonOuterHTML.indexOf('</vwc-button>');
-const buttonTemplate = buttonOuterHTML.slice(0, shadowRootAppendageIndex) + 
-    `<template shadowrootmode="open">
-        ${button.shadowRoot.innerHTML}
-    </template>` +
-    buttonOuterHTML.slice(shadowRootAppendageIndex);
+const buttonTemplate = renderVividComponent(button, {
+    'label': 'Click to Dehydrate Me',
+    'connotation': 'alert',
+    'appearance': 'filled'
+});
 
 const homePageTemplate = `
     <style>
