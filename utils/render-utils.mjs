@@ -7,10 +7,13 @@ export function renderVividComponent(component, attributes) {
     document.body.appendChild(component);
 
     const componentOuterHTML = component.outerHTML;
-    const shadowRootAppendageIndex = componentOuterHTML.indexOf('</vwc-button>');
-    return componentOuterHTML.slice(0, shadowRootAppendageIndex) + 
-        `<template shadowrootmode="open">
-            ${component.shadowRoot.innerHTML}
-        </template>` +
-        componentOuterHTML.slice(shadowRootAppendageIndex);
+    const closingTag = `</${component.tagName.toLowerCase()}>`;
+    const shadowRootAppendageIndex = componentOuterHTML.indexOf(closingTag);
+    return `
+        ${componentOuterHTML.slice(0, shadowRootAppendageIndex)}
+            <template shadowrootmode="open">
+                ${component.shadowRoot.innerHTML}
+            </template>
+        ${closingTag}`;
+};
 };
