@@ -1,10 +1,10 @@
 
 import 'global-jsdom/register';
 import '@vonage/vivid/button';
-import { getStyles } from './utils.mjs';
+import { getFileContents } from '../../utils/file-utils.mjs';
 
-const coreStyles= await getStyles();
-const themeStyles  = await getStyles('./node_modules/@vonage/vivid/styles/tokens/theme-light.css');
+const coreStyles= await getFileContents();
+const themeStyles  = await getFileContents('./node_modules/@vonage/vivid/styles/tokens/theme-light.css');
 
 const button = document.createElement('vwc-button');
 button.setAttribute('label', 'Dehydrate Me Please');

@@ -2,7 +2,7 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 
-import { getHomePageTemplate } from './home-page.template.mjs';
+import { getHomePageTemplate } from './pages/home-page/home-page.template.mjs';
 
 const server = http.createServer((req, res) => {
     let filePath = '.' + req.url;
