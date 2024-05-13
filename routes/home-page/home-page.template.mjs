@@ -10,12 +10,7 @@ const buttonTemplate = await renderVividComponentTemplate(`
     connotation="cta"
 	src="https://download.samplelib.com/mp3/sample-6s.mp3"
 ></vwc-audio-player>
-<vwc-button
-    icon="arrow-bold-right-line"
-    shape="pill"
-    label="Hydrate Us!"
-    appearance="outlined"
-></vwc-button>
+
 <vwc-card
 	headline="Vivid Card Component"
 	subtitle="Extra text below the card headline"
@@ -28,6 +23,14 @@ const buttonTemplate = await renderVividComponentTemplate(`
 		appearance="outlined"
 	></vwc-button>
 </vwc-card>
+
+<vwc-button
+    id="hydrator"
+    icon="arrow-bold-right-line"
+    shape="pill"
+    label="Hydrate Us!"
+    appearance="outlined"
+></vwc-button>
 `);
 
 const homePageTemplate = `
@@ -40,7 +43,7 @@ const homePageTemplate = `
     </div>
     <script type="module">
         console.log('Listening');
-        const button = document.querySelector('vwc-button');
+        const button = document.querySelector('#hydrator');
         button.addEventListener('click', e => {
             import ('https://unpkg.com/@vonage/vivid@latest/button');
             import ('https://unpkg.com/@vonage/vivid@latest/card');
