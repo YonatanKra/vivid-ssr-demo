@@ -2,12 +2,12 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 
-import { getHomePageTemplate } from './home-page.template.mjs';
+import * as routes from './routes/index.mjs';
 
 const server = http.createServer((req, res) => {
     let filePath = '.' + req.url;
     if (filePath === './') {
-        filePath = './index.html';
+        filePath = 'HomePage';
     }
 
     const extname = path.extname(filePath);
@@ -27,7 +27,7 @@ const server = http.createServer((req, res) => {
 
     if (contentType === 'text/html') {
       res.writeHead(200, { 'Content-Type': contentType });
-      res.end(getHomePageTemplate(), 'utf-8');
+      res.end(routes[filePath]?.template, 'utf-8');
     } else {
       fs.readFile(filePath, (err, content) => {
         if (err) {
