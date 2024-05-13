@@ -24,9 +24,12 @@ function getAllNestedShadowRootsParents(element) {
 }
 
 function getShadowRootTemplate(component) {
+    const hasFooter = Boolean(component.querySelector('[slot="footer"]'));
+    const template = hasFooter ? component.shadowRoot.innerHTML.replace(' hide-footer', '') :
+        component.shadowRoot.innerHTML;
     return `
     <template shadowrootmode="open">
-        ${component.shadowRoot.innerHTML}
+        ${template}
     </template>
     `;
 }

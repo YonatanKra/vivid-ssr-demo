@@ -128,6 +128,22 @@ describe('render-utils', () => {
             expect(testElement.dispatchEvent(new CustomEvent('test', {bubbles: true, composed: true})))
                 .toBeUndefined();
         });
+
+        it('should remove "hide-footer" class when slot footer exists', async () => {
+            const template = `
+                <vwc-card headline="Vivid Card Component"
+                    subtitle="Subtitle">
+                        <div slot="footer"></div>
+                </vwc-card>
+                <vwc-dialog headline="Vivid Card Component"
+                    subtitle="Subtitle">
+                        <div slot="footer"></div>
+                </vwc-dialog>
+                `;
+            const resultTemplate = await renderVividComponentTemplate(template);            
+            expect(resultTemplate.indexOf(' hide-footer')).toEqual(-1);
+
+        });
     });
 });
 
