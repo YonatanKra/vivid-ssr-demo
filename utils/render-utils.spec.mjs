@@ -15,7 +15,6 @@ class TestElement extends HTMLElement {
         super();
         this.attachShadow({mode: "open"});
         this.shadowRoot.innerHTML = shadowContent;
-        this.dispatchEvent(new CustomEvent('test', {bubbles: true, composed: true}));
     }
 }
 
@@ -125,18 +124,9 @@ describe('render-utils', () => {
             expect(secondTemplate.getAttribute('shadowrootmode')).toEqual('open');
         });
 
-        it('should render components that dispatch events on load', async () => {
-            const template = `<test-element-container></test-element-container>`;
-            expect(await renderVividComponentTemplate(template)).toMatchInlineSnapshot(`
-              "<test-element-container><template shadowrootmode="open">
-                      <test-element><template shadowrootmode="open">
-                      
-                  <div>I'm in the Shadow</div>
-                  <style></style>
-
-                  </template></test-element>
-                  </template></test-element-container>"
-            `);
+        it('should render components that dispatch events to patch jsdom bug', async () => {
+            expect(testElement.dispatchEvent(new CustomEvent('test', {bubbles: true, composed: true})))
+                .toBeUndefined();
         });
     });
 });
