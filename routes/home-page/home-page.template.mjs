@@ -1,18 +1,15 @@
 
-import 'global-jsdom/register';
-import '@vonage/vivid/button';
 import { getFileContents } from '../../utils/file-utils.mjs';
-import { renderVividComponent } from '../../utils/render-utils.mjs';
+import { renderVividComponentTemplate } from '../../utils/render-utils.mjs';
 
 const coreStyles= await getFileContents('./node_modules/@vonage/vivid/styles/core/all.css');
 const themeStyles  = await getFileContents('./node_modules/@vonage/vivid/styles/tokens/theme-light.css');
 
-const button = document.createElement('vwc-button');
-const buttonTemplate = renderVividComponent(button, {
-    'label': 'Click to Dehydrate Me',
-    'connotation': 'alert',
-    'appearance': 'filled'
-});
+const buttonTemplate = await renderVividComponentTemplate(`
+    <vwc-button label="Click to Hydrate me"
+                connotation="alert"
+                appearance="filled"></vwc-button>
+`);
 
 const homePageTemplate = `
     <style>

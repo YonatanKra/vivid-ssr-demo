@@ -1,13 +1,16 @@
 import 'global-jsdom/register';
 
-export function renderVividComponent(component, attributes) {
-    for (const attribute in attributes) {
-        component.setAttribute(attribute, attributes[attribute]);
+async function renderVividComponent(component, vwcPrefix = 'vwc') {
+    const tagName = component.tagName.toLowerCase();
+    const componentName = tagName.slice(tagName.indexOf('-') + 1);
+    if (tagName.indexOf(vwcPrefix) === 0) {
+        await import (`@vonage/vivid/${componentName}`);
     }
+    
     document.body.appendChild(component);
 
     const componentOuterHTML = component.outerHTML;
-    const closingTag = `</${component.tagName.toLowerCase()}>`;
+    const closingTag = `</${tagName}>`;
     const shadowRootAppendageIndex = componentOuterHTML.indexOf(closingTag);
     return `
         ${componentOuterHTML.slice(0, shadowRootAppendageIndex)}
@@ -16,4 +19,11 @@ export function renderVividComponent(component, attributes) {
             </template>
         ${closingTag}`;
 };
+
+export async function renderVividComponentTemplate(templateString, prefix='vwc') {
+    const element = document.createElement('div');
+    element.innerHTML = templateString;
+    document.body.appendChild(element);
+    element.remove();
+    return renderVividComponent(element.children[0], prefix);
 };
