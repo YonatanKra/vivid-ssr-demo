@@ -15,9 +15,19 @@ class TestElement extends HTMLElement {
         super();
         this.attachShadow({mode: "open"});
         this.shadowRoot.innerHTML = shadowContent;
+        this.dispatchEvent(new CustomEvent('test', {bubbles: true, composed: true}));
+    }
+}
+
+class TestElementContainer extends HTMLElement {
+    constructor() {
+        super();
+        this.attachShadow({mode: "open"});
+        this.shadowRoot.innerHTML = `<test-element></test-element>`;
     }
 }
 customElements.define('test-element', TestElement);
+customElements.define('test-element-container', TestElementContainer);
 
 function removeNewlinesAndSpaces(str) {
     return str.replace(/[\n\r\s]+/g, '');
@@ -69,16 +79,28 @@ describe('render-utils', () => {
             expect(removeNewlinesAndSpaces(resultedElement.children[0].outerHTML)).toEqual(removeNewlinesAndSpaces(lightContent));
         });
 
-        it('should import the vivid component', async () => {
+        function createImportSpy(importString) {
             const importSpy = vi.fn();
-            vi.doMock('@vonage/vivid/card', async (importOriginal) => {
+            vi.doMock(importString, async (importOriginal) => {
                 importSpy();
                 return await importOriginal();
             });
+            return importSpy;
+        }
+
+        it('should import the vivid components', async () => {
+            const cardImportSpy = createImportSpy('@vonage/vivid/card');
+            const audioImportSpy = createImportSpy('@vonage/vivid/audio-player');
+            const buttonImportSpy = createImportSpy('@vonage/vivid/button');
+
             const template = `<vwc-card headline="Vivid Card Component"
-                                        subtitle="Subtitle"></vwc-card>`;
+                                        subtitle="Subtitle"></vwc-card>
+                                        <vwc-audio-player></vwc-audio-player>
+                                        <vwc-button></vwc-button>`;
             await renderVividComponentTemplate(template);
-            expect(importSpy).toHaveBeenCalledOnce();
+            expect(cardImportSpy).toHaveBeenCalledOnce();
+            expect(audioImportSpy).toHaveBeenCalledOnce();
+            expect(buttonImportSpy).toHaveBeenCalledOnce();
         });
 
         it('should avoid importing a component without the given prefix', async () => {
@@ -92,5 +114,30 @@ describe('render-utils', () => {
             await renderVividComponentTemplate(template, 'test');
             expect(importSpy).toHaveBeenCalledTimes(0);
         });
+
+        it('should render sub elements with shadowDOM with a template', async () => {
+            const template = `<test-element-container><div>Lighted Part</div></test-element-container>`;
+            const componentTemplateString = await renderVividComponentTemplate(template);            
+            const resultsWrapper = getRenderedElement(componentTemplateString);
+            const firstTemplate = resultsWrapper.querySelector('template[shadowrootmode="open"]');
+            const secondTemplate = firstTemplate.content.querySelector('template[shadowrootmode="open"]');
+            expect(secondTemplate.tagName).toEqual('TEMPLATE');
+            expect(secondTemplate.getAttribute('shadowrootmode')).toEqual('open');
+        });
+
+        it('should render components that dispatch events on load', async () => {
+            const template = `<test-element-container></test-element-container>`;
+            expect(await renderVividComponentTemplate(template)).toMatchInlineSnapshot(`
+              "<test-element-container><template shadowrootmode="open">
+                      <test-element><template shadowrootmode="open">
+                      
+                  <div>I'm in the Shadow</div>
+                  <style></style>
+
+                  </template></test-element>
+                  </template></test-element-container>"
+            `);
+        });
     });
 });
+

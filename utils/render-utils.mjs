@@ -1,29 +1,74 @@
 import 'global-jsdom/register';
 
-async function renderVividComponent(component, vwcPrefix = 'vwc') {
-    const tagName = component.tagName.toLowerCase();
-    const componentName = tagName.slice(tagName.indexOf('-') + 1);
-    if (tagName.indexOf(vwcPrefix) === 0) {
-        await import (`@vonage/vivid/${componentName}`);
-    }
-    
-    document.body.appendChild(component);
+function fixFastJsDOMCollision() {
+    HTMLElement.prototype.dispatchEvent = _ => {};
+}
+fixFastJsDOMCollision();
 
-    const componentOuterHTML = component.outerHTML;
-    const closingTag = `</${tagName}>`;
-    const shadowRootAppendageIndex = componentOuterHTML.indexOf(closingTag);
+function getAllNestedShadowRootsParents(element) {
+    const nestedShadowRoots = [];
+
+    function traverseShadowRoot(node) {
+        if (node.shadowRoot) {
+            nestedShadowRoots.push(node);
+            node.shadowRoot.querySelectorAll('*').forEach(child => {
+                traverseShadowRoot(child);
+            });
+        } else {
+            Array.from(node.querySelectorAll('*')).forEach(child => traverseShadowRoot(child));
+        }
+    }
+
+    traverseShadowRoot(element);
+    return Array.from(new Set(nestedShadowRoots));
+}
+
+function getShadowRootTemplate(component) {
     return `
-        ${componentOuterHTML.slice(0, shadowRootAppendageIndex)}
-            <template shadowrootmode="open">
-                ${component.shadowRoot.innerHTML}
-            </template>
-        ${closingTag}`;
-};
+    <template shadowrootmode="open">
+        ${component.shadowRoot.innerHTML}
+    </template>
+    `;
+}
+
+function stringToElement(str) {
+    const element = document.createElement('div');
+    element.innerHTML = str;
+    return element.children[0];
+}
+
+async function loadVividComponent(componentName) {
+    await import (`@vonage/vivid/${componentName}`);
+}
+
+async function loadVividComponents(components) {
+    if (!components) return;
+    for (let i = 0; i < components.length; i++) {
+        await loadVividComponent(components[i]);
+    }
+}
+
+function getPrefixedComponentsInTemplate(htmlTemplate, prefix) {
+    const regex = new RegExp(`<${prefix}-\\w+\\b[^\\s|>]*`, 'g');
+    return htmlTemplate.match(regex)?.map(component => component.replace(`<${prefix}-`, ''));
+}
+
 
 export async function renderVividComponentTemplate(templateString, prefix='vwc') {
+    await loadVividComponents(getPrefixedComponentsInTemplate(templateString, prefix));
+
     const element = document.createElement('div');
-    element.innerHTML = templateString;
     document.body.appendChild(element);
+    element.innerHTML = templateString;
+    
+    const shadowNodes = getAllNestedShadowRootsParents(element);
+    for (let i = shadowNodes.length - 1; i >= 0; i--) {
+        const node = shadowNodes[i];
+        node.appendChild(stringToElement(getShadowRootTemplate(node)));
+    }
+
     element.remove();
-    return renderVividComponent(element.children[0], prefix);
+    return element.innerHTML;
 };
+
+
