@@ -60,7 +60,7 @@ export async function renderVividComponentTemplate(templateString, prefix='vwc')
     const element = document.createElement('div');
     document.body.appendChild(element);
     element.innerHTML = templateString;
-    await new Promise(res => setTimeout(res, 10))
+    await new Promise(res => setTimeout(res, 0))
     const shadowNodes = getAllNestedShadowRootsParents(element);
     for (let i = shadowNodes.length - 1; i >= 0; i--) {
         const node = shadowNodes[i];
