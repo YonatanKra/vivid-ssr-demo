@@ -39,6 +39,6 @@ Thus, we've created a hydrated version of the component.
 Dehydration simply happens by importing the component's JS.
 
 # Known Issues
-1. slots with the "hidden" pattern do not work (like in vwc-card)
+1. ~~slots with the "hidden" pattern do not work (like in vwc-card)~~
 2. icon connotation not taken (can be solved by using the `<use>` tag instead of `<img>`
 
